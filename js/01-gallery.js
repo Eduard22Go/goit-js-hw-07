@@ -1,52 +1,53 @@
 import { galleryItems } from './gallery-items.js';
 // Change code below this line
-const galleryRefs = document.querySelector(".gallery");
-galleryRefs.addEventListener("click", onShowBigImage);
+console.log(galleryItems);
+// Створення розмітки
+const galleryContainer = document.querySelector('.js-gallery');
 
-(function createMarkup() {
-  const itemMarkup = galleryItems
-    .map(({ original, preview, description }) => {
-      return `
-    <div class="gallery__item">
-        <a class="gallery__link" href="${original}">
-            <img
-                class="gallery__image"
-                src="${preview}"
-                data-source="${original}"
-                alt="${description}"
-            />
-        </a>
-    </div>
-    `;
+createGalleryItemsMarkup();
+
+function createGalleryItemsMarkup() {
+  const markup = galleryItems
+    .map(({ preview, original, description }) => {
+      return `<div class="gallery__item">
+  <a class="gallery__link" href="${original}">
+    <img
+      class="gallery__image"
+      src="${preview}"
+      data-source="${original}"
+      alt="${description}"
+    />
+  </a>
+</div>`;
     })
-    .join("");
-  galleryRefs.insertAdjacentHTML("beforeend", itemMarkup);
-})();
+    .join('');
 
-function onShowBigImage(e) {
-  e.preventDefault();
-  if (!e.target.classList.contains("gallery__image")) {
-    return;
-  }
-
-  let bigImageSrc = e.target.dataset.source;
-
-  const modal = basicLightbox.create(
-    `<img src="${bigImageSrc}" width="800" height="600">`
-  );
-  modal.show();
-
-  if (modal.visible()) {
-    window.addEventListener("keydown", onPressKeyESC);
-  }
-
-  function onPressKeyESC(e) {
-    if (e.code === "Escape") {
-      modal.close();
-      window.removeEventListener("keydown", onPressKeyESC);
-    }
-  }
+  galleryContainer.insertAdjacentHTML('beforeend', markup);
 }
 
+galleryContainer.addEventListener('click', onImageClick);
 
-// console.log(galleryItems);
+function onImageClick(event) {
+  event.preventDefault();
+  if (event.target.nodeName !== 'IMG') {
+    return;
+  }
+  const onImageShow = basicLightbox.create(`<img src="${event.target.dataset.source}">`, {
+    onShow: onImageShow => {
+      document.addEventListener('keydown', onEscapeKeyPress);
+    },
+
+    onClose: onImageShow => {
+      document.removeEventListener('keydown', onEscapeKeyPress);
+    },
+  });
+
+  onImageShow.show();
+
+  function onEscapeKeyPress(event) {
+    if (event.code !== 'Escape') {
+      return;
+    }
+    onImageShow.close();
+  }
+}
